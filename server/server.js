@@ -1,14 +1,17 @@
-import "dotenv/config";
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import morgan from "morgan";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+// ===== Imports =====
+const dotenv = require("dotenv");
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const OpenAI = require("openai");
 
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -29,6 +32,11 @@ const storage = multer.diskStorage({
   filename: (_, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
+
+// ===== OpenAI Config =====
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // ===== Schemas =====
 const userSchema = new mongoose.Schema({
@@ -62,6 +70,7 @@ const attendanceSchema = new mongoose.Schema({
   date: String,
   status: { type: String, enum: ["present", "absent", "pending"], default: "pending" },
   source: { type: String, enum: ["ai", "hr"], default: "ai" },
+  aiDecision: String,
 });
 const Attendance = mongoose.model("Attendance", attendanceSchema);
 
@@ -153,13 +162,37 @@ app.patch("/api/attendance/:id/override", auth("admin"), async (req, res) => {
   res.json(att);
 });
 
-// ===== Upload Proof (dummy for now) =====
+// ===== Upload Proof + AI Analysis =====
 app.post("/api/evidence/:taskId/upload", auth(), upload.single("file"), async (req, res) => {
-  // In real flow: AI analysis would go here
-  const { filename } = req.file;
-  res.json({ message: "File uploaded", file: filename });
+  try {
+    const { filename } = req.file;
+
+    // Call OpenAI for analysis
+    const aiResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an AI that verifies employee work evidence." },
+        { role: "user", content: `A file named "${filename}" has been uploaded. Decide if this should mark the employee as PRESENT or PENDING.` }
+      ],
+    });
+
+    const aiDecision = aiResponse.choices[0].message.content;
+
+    // Save to Attendance
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const attendance = await Attendance.findOneAndUpdate(
+      { user: req.user.id, date: today },
+      { user: req.user.id, date: today, status: aiDecision.toLowerCase().includes("present") ? "present" : "pending", source: "ai", aiDecision },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: "File uploaded & analyzed", file: filename, attendance });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "AI analysis failed" });
+  }
 });
 
 // ===== Start Server =====
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
