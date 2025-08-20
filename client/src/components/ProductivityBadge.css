@@ -1,0 +1,11 @@
+.badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  color: white;
+  font-weight: bold;
+}
+.badge.green { background: green; }
+.badge.blue { background: dodgerblue; }
+.badge.orange { background: orange; }
+.badge.red { background: crimson; }
+.badge.gray { background: gray; }

@@ -1,0 +1,11 @@
+.tasklist ul { list-style: none; padding: 0; }
+.tasklist li {
+  display: flex;
+  justify-content: space-between;
+  background: #f9f9f9;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+}
+.status.done { color: green; }
+.status.in-progress { color: orange; }

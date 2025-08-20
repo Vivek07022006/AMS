@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import "./Attendance.css";
 
-export default function Attendance(){
-  const [rows,setRows] = useState([]);
-  useEffect(()=>{
-    api.get("/attendance/mine").then(({data})=>setRows(data));
-  },[]);
+export default function Attendance() {
+  const dummy = [
+    { date: "2025-08-18", status: "present" },
+    { date: "2025-08-17", status: "absent" },
+  ];
+
   return (
-    <div style={{ padding:24 }}>
+    <div className="attendance-container">
       <h2>My Attendance</h2>
       <table>
-        <thead><tr><th>Date</th><th>Status</th><th>Score</th><th>Source</th></tr></thead>
+        <thead>
+          <tr><th>Date</th><th>Status</th></tr>
+        </thead>
         <tbody>
-          {rows.map(r=>(
-            <tr key={r._id}>
+          {dummy.map((r, i) => (
+            <tr key={i}>
               <td>{r.date}</td>
-              <td>{r.status}</td>
-              <td>{r.ai?.score?.toFixed?.(2)}</td>
-              <td>{r.source}</td>
+              <td className={r.status}>{r.status}</td>
             </tr>
           ))}
         </tbody>

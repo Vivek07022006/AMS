@@ -1,24 +1,19 @@
 import { useState } from "react";
-import api from "../api/axios";
+import "./TaskForm.css";
 
-export default function TaskForm({ onCreated }){
-  const [title,setTitle] = useState("");
-  const [description,setDescription] = useState("");
-  const [deadline,setDeadline] = useState("");
+export default function TaskForm() {
+  const [title, setTitle] = useState("");
 
-  const submit = async (e)=>{
+  const addTask = (e) => {
     e.preventDefault();
-    const { data } = await api.post("/tasks", { title, description, deadline });
-    onCreated?.(data);
-    setTitle(""); setDescription(""); setDeadline("");
+    alert(`Task added: ${title}`);
+    setTitle("");
   };
 
   return (
-    <form onSubmit={submit} style={{ display:"grid", gap:8 }}>
-      <input placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} />
-      <textarea placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} />
-      <input type="date" value={deadline} onChange={e=>setDeadline(e.target.value)} />
-      <button>Create Task</button>
+    <form className="task-form" onSubmit={addTask}>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task Title" />
+      <button>Add</button>
     </form>
   );
 }

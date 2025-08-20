@@ -1,33 +1,22 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import "./TaskList.css";
 
-export default function TaskList({ onSelect }){
-  const [tasks,setTasks] = useState([]);
-
-  const load = async ()=> {
-    const { data } = await api.get("/tasks");
-    setTasks(data);
-  };
-  useEffect(()=>{ load(); },[]);
-
-  const update = async (task, patch)=>{
-    const { data } = await api.patch(`/tasks/${task._id}`, patch);
-    setTasks(prev => prev.map(t=>t._id===task._id? data : t));
-  };
+export default function TaskList() {
+  const tasks = [
+    { title: "Build Login Page", status: "done" },
+    { title: "Implement Dashboard", status: "in-progress" },
+  ];
 
   return (
-    <div style={{ display:"grid", gap:12 }}>
-      {tasks.map(t=>(
-        <div key={t._id} style={{ border:"1px solid #ddd", padding:12 }}>
-          <b>{t.title}</b> — {t.status} — {t.progress}%
-          <div>{t.description}</div>
-          <button onClick={()=>onSelect?.(t)}>Upload Evidence</button>
-          <div style={{ display:"flex", gap:8, marginTop:8 }}>
-            <button onClick={()=>update(t,{ status:"in-progress" })}>In‑Progress</button>
-            <button onClick={()=>update(t,{ status:"done", progress:100 })}>Mark Done</button>
-          </div>
-        </div>
-      ))}
+    <div className="tasklist">
+      <h3>My Tasks</h3>
+      <ul>
+        {tasks.map((t, i) => (
+          <li key={i}>
+            <span>{t.title}</span>
+            <span className={`status ${t.status}`}>{t.status}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

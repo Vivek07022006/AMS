@@ -1,0 +1,15 @@
+.upload-proof {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.upload-proof button {
+  background: #0077cc;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.upload-proof button:hover { background: #005fa3; }
+.upload-proof button:disabled { background: #ccc; cursor: not-allowed; }
